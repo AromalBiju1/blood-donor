@@ -28,7 +28,7 @@ export const authOptions = {
                 }
                 const user = rows[0];
 
-                const isValid = bcrypt.compare(credentials.password,user.password);
+                const isValid = await bcrypt.compare(credentials.password,user.password);
                 if(!isValid) {
                     throw new Error("Incorrect password");
                 }
@@ -41,7 +41,11 @@ export const authOptions = {
         }),
     ],
     session :{
-        strategy:"jwt"
+        strategy:"jwt",
+        maxAge:60 * 60
+    },
+    jwt : {
+     maxAge : 60 * 60,
     },
     callbacks :{
      async jwt({token,user}) {
