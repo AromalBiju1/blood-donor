@@ -1,7 +1,7 @@
 "use client"
 import React from 'react'
 import axios from 'axios';
-import { useState } from 'react';
+import { useState,useEffect } from 'react';
 import { toast } from 'react-toastify';
 import { useRouter } from 'next/navigation';
 const SignupPage = () => {
@@ -16,7 +16,26 @@ const SignupPage = () => {
     address: ''
     });
     const [loading,setLoading] = useState(false);
+    const [loadPage,setLoadPage] = useState(true);
+
     const router = useRouter();
+    useEffect(()=> {
+       const checkProfile = async () => {
+         try {
+         const res = await axios.get("/api/profile");
+         if(res.status === 200) {
+          router.push("/dashboard");
+         }
+         else {
+          setLoadPage(false);
+         }
+         }
+         catch(error) {
+            setLoadPage(false)
+         }
+       }
+       checkProfile();
+    },[router])
 
     const handleChange = async (e) => {
        setFormData({...formData,[e.target.name]:e.target.value})
@@ -38,7 +57,7 @@ const SignupPage = () => {
             setLoading(false)
         }
     }
-
+   if(loadPage) return <p className='text-center p-6'>Checking profile..</p>;
   return (
     <div className='flex flex-col min-h-screen bg-gray-50'>
        <header className="p-5">

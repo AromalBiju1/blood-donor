@@ -1,7 +1,35 @@
 "use client"
-import React from "react";
-
+import React, { useEffect, useState } from "react";
+import { useSession } from "next-auth/react";
+import axios from "axios";
 const Dashboard = () => {
+  const {data:session,status} = useSession();
+  const [profile,setProfile] = useState(null);
+  const [loading,setLoading] = useState(true);
+
+  useEffect(() => {
+  async function fetchProfile() {
+    try {
+      if (status === "authenticated") {
+        const res = await axios.get(`/api/profile/${session.user?.id}`);
+
+        if (res.status === 404) {
+          setProfile(null); 
+        } else {
+          setProfile(res.data);
+        }
+      }
+    } catch (error) {
+      console.error("Error fetching profile:", error);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  fetchProfile();
+}, [status, session]);
+   if(loading) return <p className="text-center mt-10">Loading...</p>
+  if(!session) return  <p className="text-center mt-10">Please log in to view your dashboard.</p>;
   return (
     <div className="bg-gray-50 text-gray-800 h-screen flex">
       {/* Sidebar */}
@@ -12,10 +40,6 @@ const Dashboard = () => {
             alt="logo"
             className="rounded-full"
           />
-          <div className="ml-3">
-            <h1 className="text-red-600 font-bold">BLOODLINE</h1>
-            <p className="text-xs text-gray-500">Give. Connect. Live</p>
-          </div>
         </div>
 
         {/* Overview */}
@@ -99,14 +123,12 @@ const Dashboard = () => {
       <main className="flex-1 p-8">
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
-          <h2 className="text-2xl font-semibold">Welcome, User</h2>
+          <h2 className="text-2xl font-semibold">Welcome, {session.user?.name}</h2>
           <p className="text-sm text-gray-500">date</p>
         </div>
 
         {/* Profile Banner */}
-        <div className="relative bg-red-500 h-32 rounded-lg overflow-hidden">
-          
-        </div>
+         <img src="/top.png" className="w-full h-36 object-cover rounded-xl mb-6" alt=""/>
 
         {/* Profile Card */}
         <div className="bg-white shadow-md rounded-lg p-6 -mt-12 relative z-10">
@@ -115,40 +137,49 @@ const Dashboard = () => {
               👤
             </div>
             <div>
-              <h3 className="text-lg font-semibold">User Name</h3>
-              <p className="text-gray-500 text-sm">example@gmail.com</p>
+              <h3 className="text-lg font-semibold">{profile?.name}</h3>
+              <p className="text-gray-500 text-sm">{session.user?.email}</p>
             </div>
           </div>
 
           {/* Profile Info */}
           <div className="grid grid-cols-2 gap-y-4 gap-x-8 mt-6 text-sm">
-            <p>
-              <span className="font-semibold">Full Name:</span>
-            </p>
-            <p>
-              <span className="font-semibold">Year:</span>
-            </p>
-            <p>
-              <span className="font-semibold">Semester:</span>
-            </p>
-            <p>
-              <span className="font-semibold">Division:</span>
-            </p>
-            <p>
-              <span className="font-semibold">Address:</span>
-            </p>
-            <p>
-              <span className="font-semibold">Ph no:</span>
-            </p>
-            <p>
-              <span className="font-semibold">Gender:</span>
-            </p>
-            <p>
-              <span className="font-semibold">Blood grp:</span>
-            </p>
-            <p>
-              <span className="font-semibold">Allergies if any:</span>
-            </p>
+            <div>
+              <label className="block text-gray-700 mb-1">Name</label>
+              <input name='name' defaultValue={profile?.name || ""} type="text" placeholder="Your First Name" className="w-full p-3 border-none rounded-lg bg-gray-50"/>
+            </div>
+           <div>
+              <label className="block text-gray-700 mb-1">Phone</label>
+              <input defaultValue={profile?.phone || ""} name='phone' type="text" placeholder="Phone Number" className="w-full p-3 border-none rounded-lg bg-gray-50"/>
+            </div>
+           <div>
+              <label className="block text-gray-700 mb-1">Year</label>
+              <input defaultValue={profile?.year||""} name='year' type="text" placeholder="year" className="w-full p-3 border-none rounded-lg bg-gray-50"/>
+            </div>
+            <div>
+              <label className="block text-gray-700 mb-1">Blood Group</label>
+              <input defaultValue={profile?.blood_group||""}  name='blood-_group' type="text" placeholder="Blood group" className="w-full p-3 border-none rounded-lg bg-gray-50"/>
+            </div>
+           <div>
+              <label className="block text-gray-700 mb-1">Semester</label>
+              <input defaultValue={profile?.semester||""}  name='semester' type="text" placeholder="Semester" className="w-full p-3 border-none rounded-lg bg-gray-50"/>
+            </div>
+            <div>
+              <label className="block text-gray-700 mb-1">Gender</label>
+              <input defaultValue={profile?.gender||""}  name='gender' type="text" placeholder="Gender" className="w-full p-3 border-none rounded-lg bg-gray-50"/>
+            </div>
+             <div>
+              <label className="block text-gray-700 mb-1">Division</label>
+              <input defaultValue={profile?.division||""}  name='division' type="text" placeholder="Division" className="w-full p-3 border-none rounded-lg bg-gray-50"/>
+            </div>
+            <div>
+              <label className="block text-gray-700 mb-1">Allergies if any</label>
+              <input defaultValue={profile?.allergies||""}  name='allergies' type="text" placeholder="Allergies" className="w-full p-3 border-none rounded-lg bg-gray-50"/>
+            </div>
+             <div className="md:col-span-2">
+              <label className="block text-gray-700 mb-1">Address</label>
+              <textarea defaultValue={profile?.address||""}  name='address' placeholder="Address" className="w-full p-3 border-none rounded-lg bg-gray-50"></textarea>
+            </div>
           </div>
         </div>
       </main>
