@@ -52,7 +52,7 @@ export default function Loginpage() {
       }
       else {
         toast.success("Signed in successfully!")
-        router.push("/dashboard")
+        router.push("/signuppage")
       }
      
      
