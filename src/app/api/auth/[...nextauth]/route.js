@@ -53,14 +53,14 @@ export const authOptions = {
             token.id = user.id;
         }
         return token;
-     }
-    },
-    async session({session,token}) {
-      session.user.id = token.id;
-      return session
+     },
+     async session({session,token}) {
+       session.user.id = token.id;
+       return session
+     },
     },
     pages:{
-        signIn:"auth/signin",
+        signIn:"/login",
     },
 };
 

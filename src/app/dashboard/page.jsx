@@ -9,7 +9,7 @@ const Dashboard = () => {
   return (
     <div>
       <h1>Welcome,{session.user?.name}</h1>
-   </div>
+    </div>
   )
 }
 
