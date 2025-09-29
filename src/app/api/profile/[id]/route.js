@@ -2,8 +2,8 @@ import { getDB } from "@/lib/db";
 import { NextResponse } from "next/server";
 export async function GET(req,{params}) {
     try {
-       const {id} = params;
-       const db = getDB()
+       const { id } = await params;
+       const db = await getDB()
        const [rows] = await db.query("SELECT u.id,u.name,up.phone, up.year, up.blood_group, up.semester, up.gender, up.division, up.allergies, up.address FROM users u LEFT JOIN user_profiles up ON u.id = up.user_id WHERE u.id = ?",[id]);
 
        if(rows.length === 0) {
