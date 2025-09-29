@@ -44,7 +44,7 @@ export default function Loginpage() {
         email,
         password,
       })
-      console.log(res.data);
+      console.log(res);
       
       
       if(res?.error) {
@@ -130,7 +130,7 @@ export default function Loginpage() {
 
             <button
             onClick={() => {
-              signIn("google",{ callbackUrl:"/dashboard" })
+              signIn("google",{ callbackUrl:"/signuppage" })
             }}
               type="button"
               className="w-full flex items-center justify-center gap-2 border text-black text-bold border-gray-300 py-2 rounded-md hover:bg-gray-100"
@@ -204,7 +204,7 @@ export default function Loginpage() {
 
             <button
             onClick={() => {
-              signIn("google",{ callbackUrl:"/dashboard" })
+              signIn("google",{ callbackUrl:"/signuppage" })
             }}
               type="button"
               className="w-full flex items-center justify-center gap-2 border text-black border-gray-300 py-2 rounded-md hover:bg-gray-100"
