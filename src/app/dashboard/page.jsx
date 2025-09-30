@@ -2,11 +2,13 @@
 import React, { useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
 import axios from "axios";
+import { useRouter } from "next/navigation";
 const Dashboard = () => {
+  const router = useRouter();
   const {data:session,status} = useSession();
   const [profile,setProfile] = useState(null);
   const [loading,setLoading] = useState(true);
-
+  
   useEffect(() => {
   async function fetchProfile() {
     try {
@@ -30,6 +32,14 @@ const Dashboard = () => {
 }, [status, session]);
    if(loading) return <p className="text-center mt-10">Loading...</p>
   if(!session) return  <p className="text-center mt-10">Please log in to view your dashboard.</p>;
+
+   const handleClick = () => {
+    router.push('/request'); 
+  };
+
+
+
+  
   return (
     <div className="bg-gray-50 text-gray-800 h-screen flex">
       {/* Sidebar */}
@@ -56,8 +66,8 @@ const Dashboard = () => {
             </li>
             <li>
               <a
-                href="#"
-                className="flex items-center space-x-2 text-gray-700 hover:text-blue-600"
+                href="#" onClick={handleClick}
+                className="flex items-center space-x-2 text-gray-700 hover:text-blue-600" 
               >
                 <span>📝</span> <span>Request</span>
               </a>
