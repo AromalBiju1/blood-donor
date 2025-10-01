@@ -2,8 +2,8 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { ToastContainer, toast } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
+import { toast } from 'react-toastify';
+
 
 export default function RequestForm() {
   const router = useRouter();
@@ -20,7 +20,7 @@ const [hospitalAddress, setHospitalAddress] = useState('');
 
   const handleSubmit = async (e) => {
   e.preventDefault();
-
+  setLoading(true)
   const formData = {
     patientName,
     bloodGroup,
@@ -41,21 +41,16 @@ const [hospitalAddress, setHospitalAddress] = useState('');
     const data = await res.json();
 
     if (data.success) {
-      toast.success('Request submitted successfully!', {
-        position: 'top-right',
-        className: 'bg-green-600 text-white font-semibold',
-        progressClassName: 'bg-green-400',
-      });
+      toast.success('Request submitted successfully!');
       setSubmitted(true);
     } else {
       throw new Error(data.error || 'Failed to submit request');
     }
   } catch (error) {
-    toast.error('Submission failed. Try again.', {
-      position: 'top-right',
-      className: 'bg-red-600 text-white font-semibold',
-      progressClassName: 'bg-red-400',
-    });
+    toast.error('Submission failed. Try again.');
+  }
+  finally{
+    setLoading(false)
   }
 };
 
@@ -66,66 +61,6 @@ const [hospitalAddress, setHospitalAddress] = useState('');
 
   return (
     <div className="bg-gray-50 text-gray-800 h-screen flex">
-      <ToastContainer/>
-      <aside className="w-64 bg-white shadow-md flex flex-col">
-        <div className="flex items-center justify-center p-6 border-b">
-          <img
-            src="/logo.png"
-            alt="logo"
-            className="rounded-full"
-          />
-        </div>
-
-        <nav className="flex-1 p-4">
-          <h2 className="text-sm font-semibold text-gray-500 mb-2">OVERVIEW</h2>
-          <ul className="space-y-3">
-            <li>
-              <a
-                href="#"
-                onClick={() => router.push('/dashboard')}
-                className="flex items-center space-x-2 hover:text-blue-600 font-medium"
-              >
-                <span>📄</span> <span>Profile</span>
-              </a>
-            </li>
-            <li>
-              <a href="#" className="flex items-center space-x-2 text-blue-600">
-                <span>📝</span> <span>Request</span>
-              </a>
-            </li>
-            <li>
-              <a href="#" className="flex items-center space-x-2 hover:text-blue-600">
-                <span>🏆</span> <span>Leaderboard</span>
-              </a>
-            </li>
-          </ul>
-
-          {/* Requests */}
-          <div className="mt-6">
-            <h2 className="text-sm font-semibold text-gray-500 mb-2">REQUESTS</h2>
-            <ul className="space-y-2">
-              <li className="flex items-center space-x-2"><span>Prashant</span></li>
-              <li className="flex items-center space-x-2"><span>Prashant</span></li>
-              <li className="flex items-center space-x-2"><span>Prashant</span></li>
-            </ul>
-          </div>
-          <div className="mt-6">
-            <h2 className="text-sm font-semibold text-gray-500 mb-2">YOUR REQUESTS</h2>
-            <ul>
-              <li className="flex items-center space-x-2"><span>Prashant</span></li>
-            </ul>
-          </div>
-        </nav>
-
-        <div className="p-4 border-t">
-          <a href="#" className="flex items-center space-x-2 text-red-500 hover:underline">
-            <span>🚪</span>
-            <span>Logout</span>
-          </a>
-        </div>
-      </aside>
-
-  
       <main className="flex-1 m-6 bg-white rounded-md shadow-lg overflow-hidden">
     
         <div className="w-full h-32">
