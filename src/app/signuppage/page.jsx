@@ -4,6 +4,7 @@ import axios from 'axios';
 import { useState,useEffect } from 'react';
 import { toast } from 'react-toastify';
 import { useRouter } from 'next/navigation';
+import { useSession } from 'next-auth/react';
 const SignupPage = () => {
     const [formData,setFormData] = useState({
     phone: '',
@@ -17,7 +18,7 @@ const SignupPage = () => {
     });
     const [loading,setLoading] = useState(false);
     const [loadPage,setLoadPage] = useState(true);
-
+    const {data: session} = useSession();
     const router = useRouter();
     useEffect(()=> {
        const checkProfile = async () => {
@@ -58,6 +59,7 @@ const SignupPage = () => {
         }
     }
    if(loadPage) return <p className='text-center p-6'>Checking profile..</p>;
+   if(!session) return null;
   return (
     <div className='flex flex-col min-h-screen bg-gray-50'>
        <header className="p-5">
@@ -71,7 +73,7 @@ const SignupPage = () => {
     <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-4">
       <div>
         <label className="block text-gray-700 mb-1">Name</label>
-        <input name='name' type="text" placeholder="Your First Name" className="w-full p-3 border-none rounded-lg bg-gray-50"/>
+        <input defaultValue={session.user?.name || ""} name='name' type="text" placeholder="Your First Name" className="w-full p-3 border-none rounded-lg bg-gray-50"/>
       </div>
       <div>
         <label className="block text-gray-700 mb-1">Ph no:</label>
