@@ -44,7 +44,7 @@ export async function POST(request) {
 export async function GET() {
    try {
     const db = await getDB();
-    const [rows] = await db.query("SELECT r.id,r.patientName,r.bloodGroup,r.age,r.unitsRequired,r.gender,r.hospitalName,r.hospitalAddress,r.status FROM requests r JOIN users u ON r.requester_id  = u.id WHERE r.status = 'pending'");
+    const [rows] = await db.query("SELECT r.id,r.patientName,r.bloodGroup,r.age,r.unitsRequired,r.gender,r.hospitalName,r.hospitalAddress,r.status,r.requester_id FROM requests r JOIN users u ON r.requester_id  = u.id WHERE r.status = 'pending'");
     return NextResponse.json(rows);
    }
    catch(error) {
