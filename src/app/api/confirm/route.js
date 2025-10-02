@@ -8,8 +8,9 @@ export async function POST(req) {
 
      const db = await getDB();
 
+     await db.query("UPDATE donor_responses SET status='donated' WHERE request_id=? AND donor_id=?", [requestId, donorId]);
+     
      if(confirmed) {
-        await db.query("UPDATE donor_responses SET status='donated' WHERE request_id=? AND donor_id=?", [requestId, donorId]);
       await db.query("UPDATE requests SET status='fulfilled' WHERE id=?", [requestId]);
 
       await db.query("INSERT INTO donor_points (user_id, points) VALUES (?, 10) ON DUPLICATE KEY UPDATE points = points + 10",[donorId])
