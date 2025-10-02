@@ -6,6 +6,8 @@ import { useRouter } from "next/navigation";
 import RequestForm from "../request/page";
 import { toast } from "react-toastify";
 
+
+
 const Dashboard = () => {
   const router = useRouter();
   const { data: session, status } = useSession();
@@ -14,6 +16,8 @@ const Dashboard = () => {
   const [reqToDonate, setReqToDonate] = useState([]);
   const [activeSection, setActiveSection] = useState("profile");
   const [selectRequest, setSelectRequest] = useState(null);
+ 
+  
 
   useEffect(() => {
     async function fetchProfile() {
@@ -152,42 +156,61 @@ const Dashboard = () => {
             </li>
           </ul>
 
-          {/* Requests */}
-          <div className="mt-6">
-            <h2 className="text-sm font-semibold text-gray-500 mb-2">
-              Requests to Donate
-            </h2>
-            <ul>
-              {reqToDonate.map((req) => (
-                <li
-                  key={req.id}
-                  onClick={() => {
-                    setSelectRequest(req);
-                    setActiveSection("donate");
-                  }}
-                  className="cursor-pointer flex justify-between items-center mb-2 p-2 bg-gray-100 rounded hover:bg-gray-200"
-                >
-                  <div>
-                    <p className="font-bold text-blue-600">
-                      {req.patientName}
-                    </p>
-                  </div>
-                </li>
-              ))}
-            </ul>
+          {/* Requests to Donate */}
+<div className="mt-6">
+  <h2 className="text-sm font-semibold text-gray-500 mb-2">
+    REQUESTS
+  </h2>
+  <ul>
+    {reqToDonate
+      .filter((req) => req.userId !== session.user?.id) // exclude your own requests
+      .map((req) => (
+        <li
+          key={req.id}
+          onClick={() => {
+            setSelectRequest(req);        // set the clicked request
+            setActiveSection("donate");   // switch to donation form
+          }}
+          className="cursor-pointer flex justify-between items-center mb-2 p-2 bg-gray-100 rounded hover:bg-gray-200"
+        >
+          <div>
+            <p className="font-bold text-blue-600">{req.patientName}</p>
           </div>
+        </li>
+      ))}
+  </ul>
+</div>
 
-          {/* Your Requests */}
-          <div className="mt-6">
-            <h2 className="text-sm font-semibold text-gray-500 mb-2">
-              YOUR REQUESTS
-            </h2>
-            <ul>
-              <li className="flex items-center space-x-2">
-                <span>Prashant</span>
-              </li>
-            </ul>
+
+   
+          
+{/* Your Requests */}
+<div className="mt-6">
+  <h2 className="text-sm font-semibold text-gray-500 mb-2">
+    YOUR REQUESTS
+  </h2>
+  <ul>
+    {reqToDonate
+      .filter((req) => req.userId === session.user?.id) // always show your requests
+      .map((req) => (
+        <li
+          key={req.id}
+          onClick={() => {
+            setSelectRequest(req);
+            setActiveSection("confirm");
+          }}
+          className="cursor-pointer flex justify-between items-center mb-2 p-2 bg-gray-100 rounded hover:bg-gray-200"
+        >
+          <div>
+            <p className="font-bold text-blue-600">{req.patientName}</p>
+            <p className="text-xs text-gray-500">
+              Status: {req.status || "pending"}
+            </p>
           </div>
+        </li>
+      ))}
+  </ul>
+</div>
         </nav>
 
         {/* Logout */}
@@ -319,58 +342,149 @@ const Dashboard = () => {
       )}
 
       {activeSection === "request" && <RequestForm />}
-
-    {activeSection === "donate" && selectRequest && (
-      
+{activeSection === "donate" && selectRequest && (
   <main className="flex-1 p-8">
-    <div className="max-w-lg mx-auto bg-white shadow-md rounded-lg p-6">
-      <h2 className="text-2xl font-semibold mb-4 text-center">
-        Donation Request Details
-      </h2>
-
-      {/* Patient Info */}
-      <div className="space-y-3 text-gray-700">
-        <p><strong>Patient Name:</strong> {selectRequest.patientName}</p>
-        <p><strong>Age:</strong> {selectRequest.age}</p>
-        <p><strong>Hospital:</strong> {selectRequest.hospitalName}</p>
-        <p><strong>Blood Group:</strong> {selectRequest.bloodGroup}</p>
-        <p><strong>Status:</strong> {selectRequest.status}</p>
-      </div>
-
-      {/* Donate Question */}
-      <div className="mt-6 text-center">
-        <h3 className="text-lg font-medium mb-4">
-          Would you like to donate for{" "}
-          <span className="text-blue-600">{selectRequest.patientName}</span>?
-        </h3>
-        <div className="flex justify-center gap-4">
-          <button onClick={() => {
-            handleDonationRes(selectRequest.id,"accepted")
-          }} className="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600">
-            Yes
-          </button>
-          <button
-            onClick={() => {
-              handleDonationRes(selectRequest.id,"rejected")
-            }}
-            className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600"
-          >
-            No
-          </button>
-        </div>
-      </div>
+    {/* Image always visible */}
+    <div className="w-full rounded-xl overflow-hidden mb-8">
+      <img src="/top.png" alt="Red Banner" className="object-cover w-full h-30" />
     </div>
+
+    {/* Show request details UNTIL accepted */}
+    {!selectRequest.accepted && (
+      <>
+        <h3 className="text-2xl font-semibold mb-6 text-left">
+          Would you like to donate to this person?
+        </h3>
+
+        <form
+          className="grid grid-cols-1 md:grid-cols-2 gap-6"
+          onSubmit={(e) => {
+            e.preventDefault();
+            toast.success("Request accepted");
+            setSelectRequest({ ...selectRequest, accepted: true }); // mark accepted
+          }}
+        >
+          <div>
+            <label className="block mb-1 text-gray-700 font-medium">Full name of patient</label>
+            <input
+              type="text"
+              value={selectRequest.patientName}
+              readOnly
+              className="w-full p-3 text-gray-500 border-none rounded-lg bg-gray-50"
+            />
+          </div>
+
+          <div>
+            <label className="block mb-1 text-gray-700 font-medium">Blood group</label>
+            <input
+              type="text"
+              value={selectRequest.bloodGroup}
+              readOnly
+              className="w-full p-3 text-gray-500 border-none rounded-lg bg-gray-50"
+            />
+          </div>
+
+          <div>
+            <label className="block mb-1 text-gray-700 font-medium">Age</label>
+            <input
+              type="number"
+              value={selectRequest.age}
+              readOnly
+              className="w-full p-3 text-gray-500 border-none rounded-lg bg-gray-50"
+            />
+          </div>
+
+          <div>
+            <label className="block mb-1 text-gray-700 font-medium">Units required</label>
+            <input
+              type="number"
+              value={selectRequest.unitsRequired || ""}
+              readOnly
+              className="w-full p-3 text-gray-500 border-none rounded-lg bg-gray-50"
+            />
+          </div>
+
+          <div>
+            <label className="block mb-1 text-gray-700 font-medium">Gender</label>
+            <input
+              type="text"
+              value={selectRequest.gender}
+              readOnly
+              className="w-full p-3 text-gray-500 border-none rounded-lg bg-gray-50"
+            />
+          </div>
+
+          <div>
+            <label className="block mb-1 text-gray-700 font-medium">Hospital/Clinic name</label>
+            <input
+              type="text"
+              value={selectRequest.hospitalName}
+              readOnly
+              className="w-full p-3 text-gray-500 border-none rounded-lg bg-gray-50"
+            />
+          </div>
+
+          <div className="md:col-span-2">
+            <label className="block mb-1 text-gray-700 font-medium">Hospital address</label>
+            <input
+              type="text"
+              value={selectRequest.hospitalAddress || ""}
+              readOnly
+              className="w-full p-3 text-gray-500 border-none rounded-lg bg-gray-50"
+            />
+          </div>
+
+          <div className="md:col-span-2 flex justify-end mt-4">
+            <button
+              type="submit"
+              className="bg-red-600 text-white px-6 py-2 rounded hover:bg-red-700 transition"
+            >
+              Accept
+            </button>
+          </div>
+        </form>
+      </>
+    )}
+
+    {/* After accepted */}
+    {selectRequest.accepted && (
+      <div className="text-center mt-10">
+        <h2 className="text-2xl font-semibold mb-4">You have accepted the request! ✅</h2>
+        <p className="mb-6 text-gray-600">
+          Your willingness to help makes a big difference. Please coordinate with the requester
+          or hospital for more donation details.
+        </p>
+        <p className="text-red-600 font-medium mb-8">❤️ Thank you for helping save lives.</p>
+        <button
+          onClick={() => setSelectRequest(null)}
+          className="bg-red-600 text-white px-6 py-2 rounded hover:bg-red-700 transition"
+        >
+          Home
+        </button>
+      </div>
+    )}
   </main>
 )}
+
+
+  
+
+
+
 {activeSection === "confirm" && selectRequest && (
-  <main className="flex-1 p-8">
-    <div className="max-w-lg mx-auto bg-white shadow-md rounded-lg p-6">
+  <main className="flex-1 m-6 bg-white rounded-md shadow-lg overflow-hidden">
+
+     <div className="w-full rounded-xl overflow-hidden mb-8">
+      <img src="/top.png" alt="Red Banner" className="object-cover w-full h-30" />
+    </div>
+
+    <div className="w-full mx-auto bg-white shadow-md rounded-lg p-6">
       <h2 className="text-2xl font-semibold mb-4 text-center">
         Confirm Donation Received
       </h2>
 
-      <p className="text-gray-700 mb-6">
-        Hello 👋, we hope your blood donation request has been fulfilled. 
+      <p className="text-gray-700 mb-6 text-center">
+        Hello 👋, we hope your blood donation request has been fulfilled. <br/>
         Have you received the required donation from{" "}
         <strong>{selectRequest.name}</strong>? 
         Please confirm so we can update our records and notify the donors.
@@ -378,13 +492,20 @@ const Dashboard = () => {
 
       <div className="flex justify-center gap-4">
         <button
-          onClick={() => handleConfirmDonation(selectRequest.id, session.user?.id, true)}
+         onClick={() => {
+          handleDonationRes(selectRequest.id, "accepted");
+         
+        }}
           className="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600"
         >
           Yes
         </button>
         <button
-          onClick={() => handleConfirmDonation(selectRequest.id,session.user?.id, false)}
+           onClick={() => {
+          handleDonationRes(selectRequest.id, "rejected");
+          setSelectRequest("received");
+
+        }}
           className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600"
         >
           No
@@ -395,8 +516,28 @@ const Dashboard = () => {
 )}
 
 
+{/*activeSection="received" && selectRequest &&  (
+  <div className="text-center mt-10">
+        <h2 className="text-2xl font-semibold mb-4">We are glad we could help you in the time of need❤️</h2>
+        <p className="mb-6 text-gray-600">
+       Wishing you or your loved one a speedy recovery, thank you for trusting us❤️
+        </p>
+      
+        <button
+          onClick={() => setSelectRequest(null)}
+          className="bg-red-600 text-white px-6 py-2 rounded hover:bg-red-700 transition"
+        >
+          Home
+        </button>
+      </div>
+)*/}
+
+
     </div>
   );
 };
 
 export default Dashboard;
+
+
+
