@@ -5,7 +5,6 @@ import axios from "axios";
 import { useRouter } from "next/navigation";
 import RequestForm from "../request/page";
 import { toast } from "react-toastify";
-import { signOut } from "next-auth/react";
 
 const Dashboard = () => {
   const router = useRouter();
@@ -15,105 +14,38 @@ const Dashboard = () => {
   const [reqToDonate, setReqToDonate] = useState([]);
   const [activeSection, setActiveSection] = useState("profile");
   const [selectRequest, setSelectRequest] = useState(null);
- const [leaderboard, setLeaderboard] = useState([]);
-  const [leaderboardLoading, setLeaderboardLoading] = useState(false);
-  const [leaderboardError, setLeaderboardError] = useState(null);
-  const [yourRequests, setYourRequests] = useState([]);
-const [availableRequests, setAvailableRequests] = useState([]);
-
-
-useEffect(() => {
-  async function fetchData() {
-    try {
-      if (status === "authenticated") {
-        const res = await axios.get(`/api/profile/${session.user?.id}`);
-        const reqRes = await axios.get("/api/request");
-
-        const allRequests = reqRes.data;
-
-        setYourRequests(
-          allRequests.filter(req => req.requester_id === session.user?.id)
-        );
-
-        setAvailableRequests(
-          allRequests.filter(req => req.requester_id !== session.user?.id && !req.accepted)
-        );
-
-        setProfile(res.status === 404 ? null : res.data);
-      }
-    } catch (error) {
-      console.error("Error fetching profile:", error);
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  fetchData();
-}, [status, session]);
-
-
-useEffect(() => {
-    if (activeSection !== "leaderboard") return; // only fetch when active
-
-    const fetchLeaderboard = async () => {
-      setLeaderboardLoading(true);
-      setLeaderboardError(null);
+  
+  useEffect(() => {
+    async function fetchProfile() {
       try {
-        const res = await axios.get("/api/leaderboard");
-        setLeaderboard(res.data);
-      } catch (error) {
-        setLeaderboardError("Failed to load leaderboard");
-        toast.error("Failed to load leaderboard: " + error.message);
-      } finally {
-        setLeaderboardLoading(false);
-      }
-    };
+        if (status === "authenticated") {
+          const res = await axios.get(`/api/profile/${session.user?.id}`);
+          const reqRes = await axios.get("/api/request");
 
-    fetchLeaderboard();
-  }, [activeSection]);
+          setReqToDonate(reqRes.data);
+          console.log(reqRes.data)
+
+          setProfile(res.status === 404 ? null : res.data);
+        }
+      } catch (error) {
+        console.error("Error fetching profile:", error);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    fetchProfile();
+  }, [status, session]);
 
   const handleDonationRes = async (requestId, status) => {
-  console.log("Calling handleDonationRes with:", { requestId, status });
-
-  const validStatuses = ["pending", "accepted", "rejected", "donated"];
-  if (!validStatuses.includes(status)) {
-    console.error("❌ Invalid status sent to handleDonationRes:", status);
-    toast.error("Invalid donation status: " + status);
-    return;
-  }
-
-  try {
-    const res = await axios.post("/api/responses", { requestId, status });
-    console.log("response from /api/responses:", res.data);
-if (res.data.success) {
-  setAvailableRequests(prev => prev.filter(req => req.id !== requestId));
-  toast.success("Agreed to donate");
-  setSelectRequest(null);
-toast.success("Agreed to donate");
-    } else {
-      toast.error("Unable to update: " + (res.data.error || "Unknown error"));
+    try {
+      await axios.post("/api/responses", { requestId, status });
+      setSelectRequest(null);
+      toast.success("Agreed to donate");
+    } catch (error) {
+      toast.error("Unable to update");
     }
-  } catch (error) {
-    console.error(
-      "error in handleDonationRes:",
-      error.response?.data || error.message || error
-    );
-    
-    const errMsg =
-      error.response?.data?.error ||
-      error.message ||
-      JSON.stringify(error);
-
-    toast.error("Unable to update: " + errMsg);
-  }
-};
-
-const handleLogout = () => {
-    signOut({ redirect: false }).then(() => {
-      router.push("http://localhost:3000");
-    });
   };
-
 
   const handleDonationConfirm = async (donorId, confirmed) => {
     try {
@@ -122,7 +54,7 @@ const handleLogout = () => {
         donorId,
         confirmed,
       });
-      //alert(confirmed ? "Donation confirmed" : "Not confirmed");
+      alert(confirmed ? "Donation confirmed" : "Not confirmed");
     } catch (error) {
       console.log(error);
     }
@@ -189,75 +121,73 @@ const handleLogout = () => {
             </li>
           </ul>
 
-         {/* Requests to Donate */}
-<div className="mt-6">
-  <h2 className="text-sm font-semibold text-gray-500 mb-2">REQUESTS</h2>
-  <ul>
-    {availableRequests.map((req) => (
-      <li
-        key={req.id}
-        onClick={() => {
-          setSelectRequest(req);
-          setActiveSection("donate");
-        }}
-        className="cursor-pointer flex justify-between items-center mb-2 p-2 bg-gray-100 rounded hover:bg-gray-200"
-      >
-        <div>
-          <p className="font-bold text-blue-600">{req.patientName}</p>
-        </div>
-      </li>
-    ))}
-  </ul>
-</div>
+          {/* Requests to Donate */}
+          <div className="mt-6">
+            <h2 className="text-sm font-semibold text-gray-500 mb-2">REQUESTS</h2>
+            <ul>
+              {reqToDonate
+                .filter((req) => req.requester_id !== session.user?.id)
+                .map((req) => (
+                  <li
+                    key={req.id}
+                    onClick={() => { setSelectRequest(req); setActiveSection("donate"); }}
+                    className="cursor-pointer flex justify-between items-center mb-2 p-2 bg-gray-100 rounded hover:bg-gray-200"
+                  >
+                    <div>
+                      <p className="font-bold text-blue-600">{req.patientName}</p>
+                    </div>
+                  </li>
+                ))}
+            </ul>
+          </div>
 
-{/* Your Requests */}
-<div className="mt-6">
-  <h2 className="text-sm font-semibold text-gray-500 mb-2">YOUR REQUESTS</h2>
-  <ul>
-    {yourRequests.map((req) => (
-      <li
-        key={req.id}
-        onClick={() => {
-          setSelectRequest(req);
-          setActiveSection("confirm");
-        }}
-        className="cursor-pointer flex justify-between items-center mb-2 p-2 bg-gray-100 rounded hover:bg-gray-200"
-      >
-        <div>
-          <p className="font-bold text-blue-600">{req.patientName}</p>
-          <p className="text-xs text-gray-500">
-            Status: {req.status || (req.accepted ? "Accepted" : "Pending")}
-          </p>
-        </div>
-      </li>
-    ))}
-  </ul>
-</div>
-
+          {/* Your Requests */}
+          <div className="mt-6">
+            <h2 className="text-sm font-semibold text-gray-500 mb-2">YOUR REQUESTS</h2>
+            <ul>
+              {reqToDonate
+                .filter((req) => req.requester_id === session.user?.id)
+                .map((req) => (
+                  <li
+                    key={req.id}
+                    onClick={() => { setSelectRequest(req); setActiveSection("confirm"); }}
+                    className="cursor-pointer flex justify-between items-center mb-2 p-2 bg-gray-100 rounded hover:bg-gray-200"
+                  >
+                    <div>
+                      <p className="font-bold text-blue-600">{req.patientName}</p>
+                      <p className="text-xs text-gray-500">
+                        Status: {req.status || "pending"}
+                      </p>
+                    </div>
+                  </li>
+                ))}
+            </ul>
+          </div>
         </nav>
 
-       <div className="p-4 border-t">
-  <button
-    onClick={handleLogout}
-    className="flex items-center space-x-2 text-red-500 hover:underline"
-  >
-    <span>🚪</span>
-    <span>Logout</span>
-  </button>
-</div>
+        {/* Logout */}
+        <div className="p-4 border-t">
+          <a
+            href="#"
+            className="flex items-center space-x-2 text-red-500 hover:underline"
+          >
+            <span>🚪</span>
+            <span>Logout</span>
+          </a>
+        </div>
       </aside>
 
       {/* Main Content */}
       {activeSection === "profile" && (
-        <main className="flex-1 p-8 mb-4">
+        <main className="flex-1 p-8">
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-2xl font-semibold">Welcome, {session.user?.name}</h2>
             <p className="text-sm text-gray-500">date</p>
           </div>
-           <div className="w-full rounded-xl overflow-hidden mb-8">
-            <img src="/top.png" alt="Red Banner" className="object-cover w-full h-30" />
-          </div>
-          <div className="bg-white shadow-md rounded-lg p-6 -mt-19 relative z-10">
+
+          <img src="/top.png" className="w-full h-36 object-cover rounded-xl mb-6" alt="" />
+
+          <div className="bg-white shadow-md rounded-lg p-6 -mt-12 relative z-10">
             <div className="flex items-center space-x-4">
               <div className="w-20 h-20 bg-gray-200 rounded-full flex items-center justify-center text-3xl">👤</div>
               <div>
@@ -401,7 +331,7 @@ const handleLogout = () => {
                 Yes
               </button>
               <button
-                onClick={() => { handleDonationConfirm(selectRequest.id, false); setActiveSection("not_received");}}
+                onClick={() => { handleDonationConfirm(selectRequest.id, false); }}
                 className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600"
               >
                 No
@@ -412,127 +342,12 @@ const handleLogout = () => {
       )}
 
       {activeSection === "received" && selectRequest && (
-        <main className="flex-1 p-8">
-        <div className="w-full rounded-xl overflow-hidden mb-8">
-            <img src="/top.png" alt="Red Banner" className="object-cover w-full h-30" />
-            
-          </div>
         <div className="text-center mt-10">
           <h2 className="text-2xl font-semibold mb-4">We are glad we could help you in the time of need ❤️</h2>
           <p className="mb-6 text-gray-600">Wishing you or your loved one a speedy recovery, thank you for trusting us ❤️</p>
           <button onClick={() => setSelectRequest(null)} className="bg-red-600 text-white px-6 py-2 rounded hover:bg-red-700 transition">Home</button>
         </div>
-        </main>
-              )}
-
-        {activeSection === "not_received" && selectRequest && (
-        <main className="flex-1 p-8">
-        <div className="w-full rounded-xl overflow-hidden mb-8">
-            <img src="/top.png" alt="Red Banner" className="object-cover w-full h-30" />
-            
-          </div>
-        <div className="text-center mt-10">
-          <h2 className="text-2xl font-semibold mb-4">We are sorry about the delay in arranging your blood donation ⏳</h2>
-          <p className="mb-6 text-gray-600">Please be assured that your request has been re-shared with our donor network and hospital partners. <br/> We're doing our best to get the required units to you as soon as possible ❤️</p>
-          <button onClick={() => setSelectRequest(null)} className="bg-red-600 text-white px-6 py-2 rounded hover:bg-red-700 transition">Home</button>
-        </div>
-        </main>
-        )}
-
-{activeSection === "leaderboard" && (
-  <main className="flex-1 p-8">
-    <div className="w-full rounded-xl overflow-hidden mb-6">
-      <img src="/top.png" alt="Banner" className="object-cover w-full h-30" />
-    </div>
-
-    {leaderboardLoading ? (
-      <p>Loading leaderboard...</p>
-    ) : leaderboardError ? (
-      <p className="text-red-500">{leaderboardError}</p>
-    ) : leaderboard.length === 0 ? (
-      <p>No leaderboard data available.</p>
-    ) : (
-      <>
-        <h2 className="text-xl font-semibold mb-2">Your score is:</h2>
-
-        {(() => {
-        
-
-          const userRank = leaderboard.findIndex(user => user.id === session.user?.id) + 1;
-
-          function getOrdinalSuffix(i) {
-            const j = i % 10,
-              k = i % 100;
-            if (j === 1 && k !== 11) return "st";
-            if (j === 2 && k !== 12) return "nd";
-            if (j === 3 && k !== 13) return "rd";
-            return "th";
-          }
-
-          return (
-            <p className="mb-6">
-              You are in <strong>{userRank > 0 ? `${userRank}${getOrdinalSuffix(userRank)}` : "N/A"}</strong> place
-            </p>
-          );
-        })()}
-
-        <div className="flex flex-wrap md:flex-nowrap gap-6">
-          {/* Podium */}
-          <div className="flex-1 flex justify-around items-end">
-            {(() => {
-              const podiumOrder = [1, 0, 2]; // visual left, center (1st), right
-              const podiumColors = [
-                { bg: "bg-yellow-400", text: "text-yellow-600", label: "1st" },
-                { bg: "bg-gray-300", text: "text-gray-600", label: "2nd" },
-                { bg: "bg-amber-300", text: "text-orange-600", label: "3rd" },
-              ];
-
-              return podiumOrder.map((visualIndex, displayIndex) => {
-                const actualIndex = displayIndex; // 0 = 1st, 1 = 2nd, 2 = 3rd
-                const person = leaderboard[actualIndex];
-                if (!person) return null;
-
-                const style = podiumColors[actualIndex];
-
-                return (
-                  <div key={person.id || actualIndex} className="text-center">
-                    <div className={`${style.bg} p-4 rounded-t-lg text-white w-24 relative`}>
-                      {actualIndex === 0 && (
-                        <span className="absolute -top-4 left-1/2 -translate-x-1/2 text-xl">👑</span>
-                      )}
-                      <p className="text-lg font-semibold">{style.label}</p>
-                      <p className="text-sm">{person.points} Pts</p>
-                    </div>
-                    <p className={`mt-2 text-sm ${style.text} font-medium`}>{person.name}</p>
-                  </div>
-                );
-              });
-            })()}
-          </div>
-
-          {/* Leaderboard Table */}
-          <div className="w-full md:w-1/3 bg-gray-300 rounded-lg shadow-md p-4 text-gray-800">
-            <div className="flex justify-between mb-2 font-semibold border-b pb-1">
-              <span>Name</span>
-              <span>Place</span>
-              <span>Points</span>
-            </div>
-            {leaderboard.map((user, idx) => (
-              <div key={user.id || idx} className="flex justify-between py-2 border-t border-white/30">
-                <span>{user.name}</span>
-                <span>{idx + 1}</span>
-                <span>{user.points}</span>
-              </div>
-            ))}
-          </div>
-        </div>
-      </>
-    )}
-  </main>
-)}
-
-
-
+      )}
     </div>
   );
 };
