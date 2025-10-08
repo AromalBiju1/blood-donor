@@ -47,12 +47,17 @@ const Dashboard = () => {
          localStorage.setItem("donorId",donorId);
              if (!donorId) return toast.error("Not logged in");
 
-      await axios.post("/api/responses", { requestId,donorId, status });
+   const response = await axios.post("/api/responses", { requestId,donorId, status });
       setSelectRequest(null);
-
-      toast.success("Agreed to donate");
+    if (response.status === 200 || response.status === 201) {
+          setSelectRequest(null);
+          toast.success("Agreed to donate");
+        } else {
+          toast.error("Unable to update");
+        }
+     
     } catch (error) {
-      toast.error("Unable to update");
+      toast.error(error.response?.data?.message);
     }
   };
 
@@ -130,9 +135,7 @@ const Dashboard = () => {
 
 
 const handleLogout = () => {
-    signOut({ redirect: false }).then(() => {
-      router.push("http://localhost:3000");
-    });
+    signOut({ callbackUrl: '/login' });
   };
 
 
