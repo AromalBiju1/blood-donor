@@ -135,9 +135,7 @@ const Dashboard = () => {
 
 
 const handleLogout = () => {
-    signOut({ redirect: false }).then(() => {
-      router.push("http://localhost:3000");
-    });
+    signOut({ callbackUrl: '/login' });
   };
 
 
