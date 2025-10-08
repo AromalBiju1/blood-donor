@@ -2,25 +2,64 @@ import { getDB } from "@/lib/db";
 import { NextResponse } from "next/server";
 
 export async function POST(req) {
-    try {
-     const body = await req.json();
-     const {requestId,donorId,confirmed} = body;
+  try {
+    const body = await req.json();
+    const { requestId, donorId, confirmed } = body;
 
-     const db = await getDB();
+    const db = await getDB();
 
-     await db.query("UPDATE donor_responses SET status='donated' WHERE request_id=? AND donor_id=?", [requestId, donorId]);
-     
-     if(confirmed) {
-      await db.query("UPDATE requests SET status='fulfilled' WHERE id=?", [requestId]);
+    // Check current status to prevent duplicate confirmations
+    const [existingRequest] = await db.query(
+      "SELECT status FROM requests WHERE id = ?",
+      [requestId]
+    );
 
-      await db.query("INSERT INTO donor_points (user_id, points) VALUES (?, 10) ON DUPLICATE KEY UPDATE points = points + 10",[donorId])
-     }
-     else {
-         await db.query("UPDATE donor_responses SET status='rejected' WHERE request_id=? AND donor_id=?", [requestId, donorId]);
-     }
-     return NextResponse.json({success : true});
+    if (!existingRequest || existingRequest.length === 0) {
+      return NextResponse.json(
+        { error: "Request not found" },
+        { status: 404 }
+      );
     }
-    catch(error) {
-        return NextResponse.json({error : "something went wrong"},{status:500})
+
+    // Prevent confirming if already fulfilled
+    if (existingRequest[0].status === "fulfilled" || existingRequest[0].status === "donated") {
+      return NextResponse.json(
+        { error: "This donation has already been confirmed" },
+        { status: 400 }
+      );
     }
+
+    if (confirmed) {
+      // Donor accepted → mark response as donated
+      await db.query(
+        "UPDATE donor_responses SET status='donated' WHERE requester_id=? AND donor_id=?",
+        [requestId, donorId]
+      );
+
+      // Mark the original request as fulfilled
+      await db.query("UPDATE requests SET status='fulfilled' WHERE id=?", [
+        requestId,
+      ]);
+
+      // Reward donor with points
+      await db.query(
+        "INSERT INTO donor_points (user_id, points) VALUES (?, 10) ON DUPLICATE KEY UPDATE points = points + 10",
+        [donorId]
+      );
+    } else {
+      // Donor rejected
+      await db.query(
+        "UPDATE donor_responses SET status='rejected' WHERE requester_id=? AND donor_id=?",
+        [requestId, donorId]
+      );
+    }
+
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    console.error("Donation confirm error:", error);
+    return NextResponse.json(
+      { error: "something went wrong" },
+      { status: 500 }
+    );
+  }
 }

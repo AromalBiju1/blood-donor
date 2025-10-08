@@ -61,11 +61,11 @@ const [hospitalAddress, setHospitalAddress] = useState('');
 
   return (
     <div className="bg-gray-50 text-gray-800 h-screen flex">
-      <main className="flex-1 m-6 bg-white rounded-md shadow-lg overflow-hidden">
+      <main className="flex-1 p-8 bg-white rounded-md shadow-lg overflow-hidden">
     
-        <div className="w-full h-32">
-          <img src="/top.png" alt="Red Banner" className="object-cover w-full h-full" />
-        </div>
+        <div className="w-full rounded-xl overflow-hidden mb-6">
+            <img src="/top.png" alt="Red Banner" className="object-cover w-full h-30" />
+          </div>
 
         <div className="p-10">
           {submitted ? (
