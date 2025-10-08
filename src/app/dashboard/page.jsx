@@ -217,16 +217,6 @@ useEffect(() => {
                 </span>
               </a>
             </li>
-            <li>
-              <a
-                href="#"
-                className="flex items-center space-x-2 ml-8 text-gray-700 hover:text-blue-600"
-              >
-                <span onClick={() => { setActiveSection("donate"); setSelectRequest(null); }}>
-                  Donation
-                </span>
-              </a>
-            </li>
           </ul>
 
           {/* Requests to Donate */}
@@ -414,7 +404,6 @@ useEffect(() => {
               <h2 className="text-2xl font-semibold mb-4">You have accepted the request! ✅</h2>
               <p className="mb-6 text-gray-600">Your willingness to help makes a big difference. Please coordinate with the requester or hospital for details.</p>
               <p className="text-red-600 font-medium mb-8">❤️ Thank you for helping save lives.</p>
-              <button onClick={() => setSelectRequest(null)} className="bg-red-600 text-white px-6 py-2 rounded hover:bg-red-700 transition">Home</button>
             </div>
           )}
         </main>
@@ -476,7 +465,6 @@ useEffect(() => {
         <div className="text-center mt-10">
           <h2 className="text-2xl font-semibold mb-4">We are glad we could help you in the time of need ❤️</h2>
           <p className="mb-6 text-gray-600">Wishing you or your loved one a speedy recovery, thank you for trusting us ❤️</p>
-          <button onClick={() => setSelectRequest(null)} className="bg-red-600 text-white px-6 py-2 rounded hover:bg-red-700 transition">Home</button>
         </div>
         </main>
       )}
@@ -491,7 +479,6 @@ useEffect(() => {
         <div className="text-center mt-10">
           <h2 className="text-2xl font-semibold mb-4">We’re sorry about the delay in arranging your blood donation⏳</h2>
           <p className="mb-6 text-gray-600">Please be assured that your request has been re-shared with our donor network and hospital partners.<br/> We’re doing our best to get the required units to you as soon as possible.</p>
-          <button onClick={() => setSelectRequest(null)} className="bg-red-600 text-white px-6 py-2 rounded hover:bg-red-700 transition">Home</button>
         </div>
         </main>)}
 {activeSection === "leaderboard" && (
