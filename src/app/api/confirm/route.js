@@ -5,7 +5,8 @@ export async function POST(req) {
   try {
     const body = await req.json();
     const { requestId, donorId, confirmed } = body;
-
+  console.log(requestId)
+  console.log(donorId)
     const db = await getDB();
 
     // Check current status to prevent duplicate confirmations
@@ -14,20 +15,16 @@ export async function POST(req) {
       [requestId]
     );
 
-    if (!existingRequest || existingRequest.length === 0) {
-      return NextResponse.json(
-        { error: "Request not found" },
-        { status: 404 }
-      );
-    }
+   console.log(existingRequest);
+   
 
     // Prevent confirming if already fulfilled
-    if (existingRequest[0].status === "fulfilled" || existingRequest[0].status === "donated") {
-      return NextResponse.json(
-        { error: "This donation has already been confirmed" },
-        { status: 400 }
-      );
-    }
+    // if (existingRequest[0].status === "fulfilled" || existingRequest[0].status === "donated") {
+    //   return NextResponse.json(
+    //     { error: "This donation has already been confirmed" },
+    //     { status: 400 }
+    //   );
+    // }
 
     if (confirmed) {
       // Donor accepted → mark response as donated
@@ -37,7 +34,7 @@ export async function POST(req) {
       );
 
       // Mark the original request as fulfilled
-      await db.query("UPDATE requests SET status='fulfilled' WHERE id=?", [
+      await db.query("UPDATE requests SET status='fulfilled' WHERE requester_id=?", [
         requestId,
       ]);
 
