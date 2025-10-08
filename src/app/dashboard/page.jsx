@@ -44,6 +44,7 @@ const Dashboard = () => {
   const handleDonationRes = async (requestId, status) => {
     try {
          const donorId = session.user?.id;
+         localStorage.setItem("donorId",donorId);
              if (!donorId) return toast.error("Not logged in");
 
       await axios.post("/api/responses", { requestId,donorId, status });
@@ -98,7 +99,7 @@ const Dashboard = () => {
   }
   try {
     setIsConfirming(true);
-    const donorId = session.user?.id;
+    const donorId = localStorage.getItem("donorId");
     if (!donorId) return toast.error("Not logged in");
  console.log("Sending to API:", { requestId, donorId, confirmed });
     console.log("Full selectRequest object:", selectRequest);
