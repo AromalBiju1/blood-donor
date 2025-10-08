@@ -1,0 +1,71 @@
+import NextAuth from "next-auth";
+import GoogleProvider from 'next-auth/providers/google'
+import CredentialsProvider from 'next-auth/providers/credentials';
+import { getDB } from "@/lib/db";
+import bcrypt from 'bcryptjs';
+
+export const authOptions = {
+    providers : [
+        GoogleProvider({
+            clientId:process.env.GOOGLE_CLIENT_ID,
+            clientSecret:process.env.GOOGLE_CLIENT_SECRET,
+        }),
+        CredentialsProvider({
+            name:"Credentials",
+            credentials:{
+                email:{label:"Email", type:"email" },
+                password :{label:"Password",type:"password"},
+            },
+
+            async authorize(credentials) {
+                const db = await getDB();
+                const [rows] = await db.query(
+                    "SELECT * FROM users WHERE email = ?",[credentials.email]
+                );
+
+                if(rows.length == 0) {
+                    throw new Error("No user found");
+                }
+                const user = rows[0];
+
+                const isValid = await bcrypt.compare(credentials.password,user.password);
+                if(!isValid) {
+                    throw new Error("Incorrect password");
+                }
+                return {
+                    id : user.id,
+                    name:user.name,
+                    email : user.email
+                };
+            },
+        }),
+    ],
+    session :{
+        strategy:"jwt",
+        maxAge:60 * 60
+    },
+    jwt : {
+     maxAge : 60 * 60,
+    },
+    callbacks :{
+     async jwt({token,user}) {
+        if(user) {
+            token.id = user.id;
+        }
+        return token;
+     },
+     async session({session,token}) {
+       session.user.id = token.id;
+       return session
+     },
+    },
+    pages:{
+        signIn:"/login",
+    },
+};
+
+const handler = NextAuth(authOptions);
+export {
+    handler as GET,
+    handler as POST
+};
