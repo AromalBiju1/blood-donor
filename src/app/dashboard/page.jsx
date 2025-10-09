@@ -187,7 +187,11 @@ useEffect(() => {
             <li>
               <a
                 href="#"
-                className="flex items-center space-x-2 text-gray-700 hover:text-blue-600 font-medium"
+                className={`flex items-center space-x-2 font-medium ${
+                  activeSection === "profile"
+                    ? "text-blue-600"
+                    : "text-gray-700"
+                }`}
               >
                 <img src="/profile.png" alt="profile" className="w-4 h-4" />
                 <span onClick={() => { setActiveSection("profile"); setSelectRequest(null); }}>
@@ -198,9 +202,13 @@ useEffect(() => {
             <li>
               <a
                 href="#"
-                className="flex items-center space-x-2 text-gray-700 hover:text-blue-600"
+                className={`flex items-center space-x-2 font-medium ${
+                  activeSection === "request"
+                    ? "text-blue-600"
+                    : "text-gray-700 "
+                }`}
               >
-                 <img src="/request.png" alt="profile" className="w-4 h-4" />
+                 <img src="/request.jpg" alt="request" className="w-4 h-4" />
                 <span onClick={() => { setActiveSection("request"); setSelectRequest(null); }}>
                   Request
                 </span>
@@ -209,9 +217,13 @@ useEffect(() => {
             <li>
               <a
                 href="#"
-                className="flex items-center space-x-2 text-gray-700 hover:text-blue-600"
+                className={`flex items-center space-x-2 font-medium ${
+                activeSection === "leaderboard"
+                  ? "text-blue-600"
+                  : "text-gray-700 hover:text-blue-600"
+              }`}
               >
-                 <img src="/leaderboard.png" alt="profile" className="w-5 h-5 object-cover" />
+                 <img src="/leaderboard.jpg" alt="leaderboard" className="w-4 h-4" />
                 <span onClick={() => { setActiveSection("leaderboard"); setSelectRequest(null); }}>
                   Leaderboard
                 </span>
