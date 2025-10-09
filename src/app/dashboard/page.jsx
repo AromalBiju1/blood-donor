@@ -181,15 +181,15 @@ useEffect(() => {
         </div>
 
         {/* Overview */}
-        <nav className="flex-1 p-4">
+        <nav className="flex-1 overflow-y-auto no-scrollbar p-4">
           <h2 className="text-sm font-semibold text-gray-500 mb-2">OVERVIEW</h2>
           <ul className="space-y-3">
             <li>
               <a
                 href="#"
-                className="flex items-center space-x-2 text-blue-600 font-medium"
+                className="flex items-center space-x-2 text-gray-700 hover:text-blue-600 font-medium"
               >
-                <span>📄</span>
+                <img src="/profile.png" alt="profile" className="w-4 h-4" />
                 <span onClick={() => { setActiveSection("profile"); setSelectRequest(null); }}>
                   Profile
                 </span>
@@ -200,7 +200,7 @@ useEffect(() => {
                 href="#"
                 className="flex items-center space-x-2 text-gray-700 hover:text-blue-600"
               >
-                <span>📝</span>
+                 <img src="/request.png" alt="profile" className="w-4 h-4" />
                 <span onClick={() => { setActiveSection("request"); setSelectRequest(null); }}>
                   Request
                 </span>
@@ -211,7 +211,7 @@ useEffect(() => {
                 href="#"
                 className="flex items-center space-x-2 text-gray-700 hover:text-blue-600"
               >
-                <span>🏆</span>
+                 <img src="/leaderboard.png" alt="profile" className="w-5 h-5 object-cover" />
                 <span onClick={() => { setActiveSection("leaderboard"); setSelectRequest(null); }}>
                   Leaderboard
                 </span>
@@ -229,10 +229,10 @@ useEffect(() => {
                   <li
                     key={req.id}
                     onClick={() => { setSelectRequest(req); setActiveSection("donate"); }}
-                    className="cursor-pointer flex justify-between items-center mb-2 p-2 bg-gray-100 rounded hover:bg-gray-200"
+                    className="cursor-pointer flex justify-between items-center mb-2 p-2  rounded hover:bg-gray-200"
                   >
                     <div>
-                      <p className="font-bold text-blue-600">{req.patientName}</p>
+                      <p className="font-bold text-gray-700">{req.patientName}</p>
                     </div>
                   </li>
                 ))}
@@ -252,7 +252,7 @@ useEffect(() => {
                     className="cursor-pointer flex justify-between items-center mb-2 p-2 bg-gray-100 rounded hover:bg-gray-200"
                   >
                     <div>
-                      <p className="font-bold text-blue-600">{req.patientName}</p>
+                      <p className="font-bold text-gray-700 hover:text-blue-600">{req.patientName}</p>
                       <p className="text-xs text-gray-500">
                         Status: {req.status || "pending"}
                       </p>
@@ -290,7 +290,7 @@ useEffect(() => {
             <div className="flex items-center space-x-4">
               <div className="w-20 h-20 bg-gray-200 rounded-full flex items-center justify-center text-3xl">👤</div>
             
-             <div className="bg-white shadow-md rounded-lg p-6 -mt-6 relative z-10">
+             <div className="bg-white rounded-lg p-6 -mt-6 relative z-10">
                 <h3 className="text-lg font-semibold">{profile?.name}</h3>
                 <p className="text-gray-500 text-sm">{session.user?.email}</p>
               </div>
