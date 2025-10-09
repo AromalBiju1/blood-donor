@@ -281,7 +281,6 @@ useEffect(() => {
           <main className="flex-1 p-8 overflow-y-auto">
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-2xl font-semibold">Welcome, {session.user?.name}</h2>
-            <p className="text-sm text-gray-500">date</p>
           </div>
 
           <img src="/top.png" className="w-full h-36 object-cover rounded-xl mb-6" alt="" />
